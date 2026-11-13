@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시장·수출 동향</title>
+<style>
+  :root{--bg:#f5f6f8;--fg:#1f2430;--card:#fff;--mute:#667;--line:#e3e6ec}
+  @media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#e8eaf0;--card:#1e222b;--mute:#98a;--line:#2c313c}}
+  body{font-family:"Malgun Gothic",system-ui,sans-serif;margin:0;padding:24px 16px;background:var(--bg);color:var(--fg)}
+  main{max-width:900px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--mute);font-size:13px;margin-bottom:12px}
+  .sig{display:inline-block;background:#facc15;color:#422006;border-radius:12px;padding:3px 12px;font-size:12px;font-weight:700;margin-bottom:16px}
+  .cards{display:flex;gap:12px;flex-wrap:wrap}
+  .card{flex:1;min-width:210px;background:var(--card);border-radius:10px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .card .l{font-size:13px;color:var(--mute)}
+  .card .v{font-size:32px;font-weight:700;margin-top:4px}
+  .card .v small{font-size:15px;font-weight:400;color:var(--mute);margin-left:3px}
+  .card .d{font-size:12px;color:var(--mute);margin-top:6px}
+  h2{font-size:17px;margin:28px 0 4px}
+  .panel{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-top:8px}
+  svg{width:100%;height:auto;display:block}
+  svg text{fill:var(--mute);font-size:11px;font-family:inherit}
+  .grid{stroke:var(--line)}
+  .legend{display:flex;gap:16px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:14px}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .tabs{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+  .tabs button{padding:7px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:20px;font:inherit;font-size:14px;cursor:pointer}
+  .tabs button.on{background:#2b3a55;color:#fff;border-color:#2b3a55}
+  .cnts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .cnts div{flex:1;min-width:110px;background:var(--bg);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--mute)}
+  .cnts b{display:block;font-size:22px;color:var(--fg)}
+  .st{padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;background:#e5e7eb;color:#374151}
+  .st.s1{background:#dbeafe;color:#1e40af}.st.s2{background:#fef3c7;color:#92400e}.st.s3{background:#dcfce7;color:#166534}
+  td.l{text-align:left}
+  .panel.hl{border:5px solid #1d4ed8;border-radius:12px;margin:0 0 16px;padding:14px 20px 16px}
+  .panel.hl h2{margin:0 0 8px;color:#1d4ed8}
+  @media(prefers-color-scheme:dark){.panel.hl{border-color:#60a5fa}.panel.hl h2{color:#60a5fa}}
+  ol.sum{margin:0;padding-left:22px;line-height:1.9;font-size:15px}
+  .note{font-size:12px;color:var(--mute);margin-top:16px;line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+  <h1>시장·수출 동향</h1>
+  <div class="sub" id="sub"></div>
+  <div class="sig">노랑 · 거래처는 코드로 가림 / 단가·금액 없음</div>
+  <div class="panel hl">
+    <h2>임원 보고 5줄 요약</h2>
+    <ol class="sum" id="sum5"></ol>
+  </div>
+  <div class="cards">
+    <div class="card"><div class="l">누적 주문량</div><div class="v" id="c1"></div><div class="d" id="d1"></div></div>
+    <div class="card"><div class="l">10월 주문량</div><div class="v" id="c2"></div><div class="d" id="d2"></div></div>
+    <div class="card"><div class="l">수출 비중</div><div class="v" id="c3"></div><div class="d" id="d3"></div></div>
+  </div>
+  <h2>품목 계열별 월 주문량 추이</h2>
+  <div class="panel">
+    <svg id="chart" viewBox="0 0 800 300" role="img" aria-label="품목 계열별 월 주문량 추이 꺾은선 차트"></svg>
+    <div class="legend" id="legend"></div>
+    <table id="tt"></table>
+  </div>
+  <h2>수출 국가별 주문량</h2>
+  <div class="panel">
+    <svg id="bars" role="img" aria-label="수출 국가별 누적 주문량 막대 차트"></svg>
+  </div>
+  <h2>바이어 후보 진행 상태</h2>
+  <div class="panel">
+    <div class="tabs" id="btabs"></div>
+    <div class="cnts" id="bcnt"></div>
+    <table id="btb"></table>
+  </div>
+  <div class="note">출처: data/track_d_sales.xlsx '주문실적' 시트 (원본 수정 없음) · 수출 비중 = 구분이 '수출'인 주문량 ÷ 전체 주문량 · 단위: m<br>※ 원본 '안내' 시트: 연습용 가상 데이터이며 실제 거래 데이터가 아닙니다.</div>
+</main>
+<script>
+// [주문월, 품목계열, 거래처코드, 구분, 국가, 주문량(m)]
+const DATA=[["2026-01","실크","C001","내수","한국",9700],["2026-01","방염","C001","내수","한국",3900],["2026-01","합지","C002","내수","한국",3600],["2026-01","실크","C006","내수","한국",13700],["2026-01","실크","C008","내수","한국",7900],["2026-01","합지","C008","내수","한국",3400],["2026-01","방염","C008","내수","한국",4600],["2026-01","실크","C009","수출","베트남",5000],["2026-01","방염","C009","수출","베트남",2100],["2026-01","실크","C010","수출","인도네시아",6500],["2026-01","합지","C011","수출","아랍에미리트",2400],["2026-01","실크","C012","수출","폴란드",5600],["2026-02","합지","C001","내수","한국",3400],["2026-02","합지","C002","내수","한국",3700],["2026-02","방염","C002","내수","한국",3300],["2026-02","실크","C003","내수","한국",11400],["2026-02","합지","C004","내수","한국",3700],["2026-02","합지","C005","내수","한국",6200],["2026-02","실크","C006","내수","한국",7200],["2026-02","합지","C006","내수","한국",8100],["2026-02","실크","C007","내수","한국",12700],["2026-02","실크","C009","수출","베트남",5300],["2026-02","합지","C010","수출","인도네시아",3300],["2026-02","방염","C010","수출","인도네시아",1400],["2026-02","합지","C011","수출","아랍에미리트",3100],["2026-02","실크","C012","수출","폴란드",8500],["2026-02","합지","C012","수출","폴란드",4600],["2026-02","방염","C012","수출","폴란드",2400],["2026-03","실크","C001","내수","한국",10600],["2026-03","방염","C001","내수","한국",4100],["2026-03","합지","C002","내수","한국",8400],["2026-03","방염","C002","내수","한국",4300],["2026-03","합지","C003","내수","한국",5200],["2026-03","방염","C004","내수","한국",2800],["2026-03","합지","C005","내수","한국",8200],["2026-03","실크","C006","내수","한국",11100],["2026-03","합지","C006","내수","한국",8400],["2026-03","방염","C006","내수","한국",2400],["2026-03","실크","C007","내수","한국",12700],["2026-03","실크","C008","내수","한국",10000],["2026-03","합지","C008","내수","한국",7000],["2026-03","실크","C009","수출","베트남",4800],["2026-03","합지","C009","수출","베트남",4700],["2026-03","방염","C009","수출","베트남",1700],["2026-03","실크","C010","수출","인도네시아",3300],["2026-03","합지","C010","수출","인도네시아",4600],["2026-03","실크","C011","수출","아랍에미리트",5800],["2026-03","합지","C011","수출","아랍에미리트",5000],["2026-04","방염","C001","내수","한국",2500],["2026-04","실크","C003","내수","한국",6800],["2026-04","합지","C004","내수","한국",7600],["2026-04","합지","C005","내수","한국",4200],["2026-04","방염","C005","내수","한국",2300],["2026-04","방염","C006","내수","한국",5500],["2026-04","실크","C007","내수","한국",10000],["2026-04","방염","C007","내수","한국",4500],["2026-04","실크","C008","내수","한국",6100],["2026-04","방염","C008","내수","한국",2500],["2026-04","합지","C009","수출","베트남",5600],["2026-04","방염","C010","수출","인도네시아",1200],["2026-04","실크","C011","수출","아랍에미리트",3600],["2026-04","합지","C011","수출","아랍에미리트",2200],["2026-04","실크","C012","수출","폴란드",8300],["2026-05","합지","C001","내수","한국",7100],["2026-05","합지","C003","내수","한국",4600],["2026-05","방염","C003","내수","한국",2400],["2026-05","실크","C004","내수","한국",14200],["2026-05","합지","C004","내수","한국",9100],["2026-05","방염","C004","내수","한국",5000],["2026-05","실크","C006","내수","한국",12700],["2026-05","합지","C007","내수","한국",4800],["2026-05","방염","C008","내수","한국",3800],["2026-05","합지","C009","수출","베트남",4300],["2026-05","합지","C011","수출","아랍에미리트",3700],["2026-05","방염","C011","수출","아랍에미리트",2600],["2026-05","합지","C012","수출","폴란드",5000],["2026-06","실크","C001","내수","한국",14200],["2026-06","실크","C002","내수","한국",8300],["2026-06","합지","C002","내수","한국",4000],["2026-06","방염","C003","내수","한국",5200],["2026-06","방염","C004","내수","한국",5200],["2026-06","실크","C005","내수","한국",13700],["2026-06","실크","C008","내수","한국",8500],["2026-06","합지","C008","내수","한국",5600],["2026-06","합지","C009","수출","베트남",3800],["2026-06","실크","C012","수출","폴란드",3400],["2026-06","합지","C012","수출","폴란드",5500],["2026-06","방염","C012","수출","폴란드",1200],["2026-07","실크","C001","내수","한국",7800],["2026-07","합지","C001","내수","한국",3900],["2026-07","실크","C002","내수","한국",7100],["2026-07","합지","C002","내수","한국",5500],["2026-07","합지","C003","내수","한국",6800],["2026-07","방염","C003","내수","한국",3500],["2026-07","실크","C004","내수","한국",5100],["2026-07","방염","C005","내수","한국",4500],["2026-07","실크","C006","내수","한국",11000],["2026-07","합지","C006","내수","한국",8800],["2026-07","실크","C007","내수","한국",11000],["2026-07","합지","C007","내수","한국",4700],["2026-07","방염","C008","내수","한국",5300],["2026-07","실크","C010","수출","인도네시아",6600],["2026-07","합지","C010","수출","인도네시아",3600],["2026-07","방염","C010","수출","인도네시아",2000],["2026-07","실크","C011","수출","아랍에미리트",5000],["2026-07","방염","C011","수출","아랍에미리트",2900],["2026-07","합지","C012","수출","폴란드",4100],["2026-08","실크","C001","내수","한국",7700],["2026-08","방염","C001","내수","한국",2000],["2026-08","방염","C002","내수","한국",4600],["2026-08","방염","C003","내수","한국",2000],["2026-08","합지","C004","내수","한국",3600],["2026-08","방염","C004","내수","한국",5100],["2026-08","합지","C005","내수","한국",9500],["2026-08","합지","C007","내수","한국",6000],["2026-08","방염","C007","내수","한국",5600],["2026-08","합지","C008","내수","한국",4300],["2026-08","방염","C008","내수","한국",5100],["2026-08","합지","C010","수출","인도네시아",5200],["2026-08","방염","C011","수출","아랍에미리트",1800],["2026-08","실크","C012","수출","폴란드",7000],["2026-08","방염","C012","수출","폴란드",3100],["2026-09","방염","C001","내수","한국",3700],["2026-09","실크","C003","내수","한국",4900],["2026-09","합지","C003","내수","한국",9500],["2026-09","실크","C005","내수","한국",13600],["2026-09","방염","C005","내수","한국",5100],["2026-09","합지","C006","내수","한국",6400],["2026-09","실크","C008","내수","한국",12800],["2026-09","실크","C009","수출","베트남",7400],["2026-09","합지","C009","수출","베트남",2000],["2026-09","방염","C009","수출","베트남",2500],["2026-09","방염","C010","수출","인도네시아",3000],["2026-09","방염","C011","수출","아랍에미리트",2600],["2026-09","실크","C012","수출","폴란드",6400],["2026-09","합지","C012","수출","폴란드",5400],["2026-09","방염","C012","수출","폴란드",3300],["2026-10","실크","C001","내수","한국",6700],["2026-10","방염","C001","내수","한국",4000],["2026-10","실크","C002","내수","한국",13300],["2026-10","방염","C002","내수","한국",2100],["2026-10","실크","C003","내수","한국",9900],["2026-10","합지","C003","내수","한국",5700],["2026-10","실크","C004","내수","한국",6900],["2026-10","합지","C004","내수","한국",7100],["2026-10","방염","C004","내수","한국",4000],["2026-10","실크","C005","내수","한국",11900],["2026-10","합지","C005","내수","한국",4900],["2026-10","방염","C006","내수","한국",3000],["2026-10","실크","C007","내수","한국",7600],["2026-10","합지","C007","내수","한국",6600],["2026-10","실크","C009","수출","베트남",8400],["2026-10","합지","C010","수출","인도네시아",2200],["2026-10","방염","C010","수출","인도네시아",3000],["2026-10","방염","C011","수출","아랍에미리트",3100],["2026-10","방염","C012","수출","폴란드",2200]];
+const f=n=>n.toLocaleString("ko-KR");
+const sum=a=>a.reduce((s,r)=>s+r[5],0);
+const months=[...new Set(DATA.map(r=>r[0]))].sort();
+const last=months[months.length-1], first=months[0];
+const total=sum(DATA), cur=sum(DATA.filter(r=>r[0]==="2026-10")), exp=sum(DATA.filter(r=>r[3]==="수출"));
+document.getElementById("sub").textContent=`${first} ~ ${last} 주문실적 · ${DATA.length}건`;
+document.getElementById("c1").innerHTML=f(total)+"<small>m</small>";
+document.getElementById("d1").textContent=`${first} ~ ${last} 합계`;
+document.getElementById("c2").innerHTML=f(cur)+"<small>m</small>";
+document.getElementById("d2").textContent=`누적의 ${(cur/total*100).toFixed(1)}%`;
+document.getElementById("c3").textContent=(exp/total*100).toFixed(1)+"%";
+document.getElementById("d3").textContent=`수출 ${f(exp)}m / 전체 ${f(total)}m`;
+
+// ---- 계열별 월 추이 ----
+const FAM=[["실크","#2563eb"],["합지","#d97706"],["방염","#16a34a"]];
+const by={};
+for(const [fam] of FAM){by[fam]=months.map(m=>sum(DATA.filter(r=>r[0]===m&&r[1]===fam)));}
+const W=800,H=300,L=56,R=60,T=16,B=32;
+const max=Math.ceil(Math.max(...FAM.flatMap(([k])=>by[k]))/10000)*10000;
+const x=i=>L+(W-L-R)*i/(months.length-1), y=v=>T+(H-T-B)*(1-v/max);
+let g="";
+for(let t=0;t<=4;t++){const v=max*t/4;g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${f(v)}</text>`;}
+months.forEach((m,i)=>{g+=`<text x="${x(i)}" y="${H-10}" text-anchor="middle">${+m.slice(5)}월</text>`;});
+for(const [k,c] of FAM){
+  g+=`<polyline fill="none" stroke="${c}" stroke-width="2.5" points="${by[k].map((v,i)=>x(i)+","+y(v)).join(" ")}"/>`;
+  by[k].forEach((v,i)=>{g+=`<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="${c}"><title>${k} ${months[i]}: ${f(v)}m</title></circle>`;});
+  const lv=by[k][by[k].length-1];
+  g+=`<text x="${x(months.length-1)+8}" y="${y(lv)+4}" style="fill:${c};font-weight:700">${k}</text>`;
+}
+document.getElementById("chart").innerHTML=g;
+document.getElementById("legend").innerHTML=FAM.map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join("");
+const fs=FAM.map(([k,c])=>[k,c,by[k].reduce((a,b)=>a+b,0)]);
+document.getElementById("tt").innerHTML="<tr><th>품목 계열</th><th>누적 주문량 (m)</th><th>비중</th></tr>"+
+  fs.map(([k,c,v])=>`<tr><td><i style="background:${c}"></i>${k}</td><td>${f(v)}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join("")+
+  `<tr><td><b>합계</b></td><td><b>${f(total)}</b></td><td><b>100.0%</b></td></tr>`;
+
+// ---- 수출 국가별 ----
+const cm={};
+for(const r of DATA){if(r[3]==="수출")cm[r[4]]=(cm[r[4]]||0)+r[5];}
+const cs=Object.entries(cm).sort((a,b)=>b[1]-a[1]);
+const BW=800,RH=44,BT=8,BL=110,BR=150,BH=BT*2+RH*cs.length,bmax=cs[0][1];
+let bg="";
+cs.forEach(([k,v],i)=>{
+  const y0=BT+i*RH,w=(BW-BL-BR)*v/bmax;
+  bg+=`<text x="${BL-10}" y="${y0+RH/2+4}" text-anchor="end" style="font-size:13px">${k}</text>`+
+      `<rect x="${BL}" y="${y0+7}" width="${w}" height="${RH-14}" rx="3" fill="#7c3aed"><title>${k}: ${f(v)}m</title></rect>`+
+      `<text x="${BL+w+8}" y="${y0+RH/2+4}" style="font-size:13px;fill:var(--fg)">${f(v)} m · ${(v/exp*100).toFixed(1)}%</text>`;
+});
+const bs=document.getElementById("bars");
+bs.setAttribute("viewBox",`0 0 ${BW} ${BH}`);bs.innerHTML=bg;
+
+// ---- 바이어 후보 ----
+// [후보코드, 국가, 업종, 관심계열, 상태, 최근접촉일]
+const BUY=[["B001","베트남","벽지 수입상","실크","접촉 전",null],["B002","튀르키예","인테리어 자재 유통","실크","샘플 발송","2026-09-29"],["B003","태국","벽지 수입상","합지","접촉 전",null],["B004","튀르키예","건설사 구매","실크","메일 발송","2026-09-10"],["B005","사우디아라비아","벽지 수입상","합지","샘플 발송","2026-10-19"],["B006","폴란드","건설사 구매","방염","샘플 발송","2026-09-25"],["B007","아랍에미리트","벽지 수입상","방염","샘플 발송","2026-09-09"],["B008","사우디아라비아","인테리어 자재 유통","방염","접촉 전",null],["B009","인도네시아","벽지 수입상","방염","접촉 전",null],["B010","인도네시아","건설사 구매","방염","회신","2026-10-06"],["B011","튀르키예","건설사 구매","합지","메일 발송","2026-09-26"],["B012","폴란드","인테리어 자재 유통","합지","접촉 전",null],["B013","튀르키예","벽지 수입상","합지","메일 발송","2026-10-27"],["B014","아랍에미리트","건설사 구매","합지","접촉 전",null],["B015","튀르키예","건설사 구매","합지","메일 발송","2026-11-05"]];
+const STS=["접촉 전","메일 발송","회신","샘플 발송"];
+let bsel="전체";
+const bc=Object.fromEntries(STS.map(k=>[k,BUY.filter(r=>r[4]===k).length]));
+document.getElementById("bcnt").innerHTML=`<div>전체<b>${BUY.length}건</b></div>`+STS.map(k=>`<div>${k}<b>${bc[k]}건</b></div>`).join("");
+function renderBuy(){
+  const list=BUY.filter(r=>bsel==="전체"||r[4]===bsel);
+  document.getElementById("btb").innerHTML="<tr><th>후보코드</th><th>국가</th><th>업종</th><th>관심계열</th><th>상태</th><th>최근접촉일</th></tr>"+
+    list.map(r=>`<tr><td class="l">${r[0]}</td><td class="l">${r[1]}</td><td class="l">${r[2]}</td><td class="l">${r[3]}</td><td class="l"><span class="st s${STS.indexOf(r[4])}">${r[4]}</span></td><td>${r[5]||"-"}</td></tr>`).join("");
+  document.querySelectorAll("#btabs button").forEach(b=>b.classList.toggle("on",b.dataset.k===bsel));
+}
+["전체",...STS].forEach(k=>{const b=document.createElement("button");b.textContent=k;b.dataset.k=k;b.onclick=()=>{bsel=k;renderBuy();};document.getElementById("btabs").appendChild(b);});
+renderBuy();
+
+// ---- 임원 보고 5줄 요약 (모두 위 데이터에서 계산) ----
+const li=months.length-1, prev=sum(DATA.filter(r=>r[0]===months[li-1]));
+const dp=(cur-prev)/prev*100;
+const topFam=fs.slice().sort((a,b)=>b[2]-a[2])[0];
+const topCur=FAM.map(([k])=>[k,by[k][li]]).sort((a,b)=>b[1]-a[1])[0];
+const sh=BUY.filter(r=>r[4]==="샘플 발송").length;
+const L5=[
+ `1~10월 누적 주문량은 ${f(total)}m, 10월은 ${f(cur)}m입니다(누적의 ${(cur/total*100).toFixed(1)}%).`,
+ `10월 주문량은 9월(${f(prev)}m) 대비 ${dp>=0?"+":""}${dp.toFixed(1)}%(${cur-prev>=0?"+":""}${f(cur-prev)}m)입니다.`,
+ `누적 기준 최대 계열은 ${topFam[0]}(${f(topFam[2])}m, ${(topFam[2]/total*100).toFixed(1)}%)이고, 10월 최대 계열은 ${topCur[0]}(${f(topCur[1])}m)입니다.`,
+ `수출 비중은 ${(exp/total*100).toFixed(1)}%이며, 수출 1위 국가는 ${cs[0][0]}(${f(cs[0][1])}m, 수출의 ${(cs[0][1]/exp*100).toFixed(1)}%)입니다.`,
+ `바이어 후보 ${BUY.length}건 중 접촉 전 ${bc["접촉 전"]}건, 메일 발송 ${bc["메일 발송"]}건, 회신 ${bc["회신"]}건, 샘플 발송 ${bc["샘플 발송"]}건입니다.`
+];
+document.getElementById("sum5").innerHTML=L5.map(t=>`<li>${t}</li>`).join("");
+</script>
+</body>
+</html>
